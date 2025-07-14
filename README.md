@@ -34,11 +34,11 @@ Sea el grafo siguiente, donde cada nodo representa un módulo. Un orden topológ
 
 Añadiendo un nuevo módulo
 - Caso 1
-    ![alt text](image.png)
+    ![alt text](diagramas/image-0.png)
     Un orden topológico sería [[1,2],[1,3],[3,5],[1,4],**[x,4]**]
 
 
-    ![alt text](image-1.png)
+    ![alt text](diagramas/image-1.png)
     Un orden topológico sería [[1,2],[1,3],[1,4],[3,5],**[4,x]**]
 
 En el contexto de Iac resulta intuitivo, **no se puede iniciar un módulo sin antes haber iniciado sus dependencias (si (u, v) ∈ E, v nunca aparece antes de u en la secuencia)**

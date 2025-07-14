@@ -12,6 +12,8 @@ Zapata Inga, Janio
 
 -  También se añadió un test para `composite`, verificando la correcta creación del árbol 
 
+- `TerraformDependencyAdapter` nos permite obtener aristas (get_edges) y metadatos (Grado del vertice) sin importar que los nodos sean de diferentes tipos (resource,variable,output,etc)
+
 ## Pregunta teórica: 
 *Explica cómo la incorporación de un nuevo tipo de bloque de Terraform se integra sin modificar la lógica de orden topológico, señalando cómo se mantiene OCP.*
 

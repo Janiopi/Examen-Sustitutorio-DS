@@ -243,11 +243,11 @@ class TerraformComponent:
     def show_details(self, indent=0):
         raise NotImplementedError
 
-# Hoja del arbol, representa un componente específico de Terraform
+
 class TerraformComposite(TerraformComponent):
     
-    def __init__(self, name, element_type,resource_type, file_path=None):
-        super().__init__(name, element_type, resource_type,file_path)
+    def __init__(self, name, element_type, resource_type, file_path=None):
+        super().__init__(name, element_type, resource_type, file_path)
         self.children = []
     
     def add(self, component):
@@ -286,12 +286,11 @@ class TerraformComposite(TerraformComponent):
                 all_children.extend(child.get_all_children())
         return all_children
 
-
+# Hoja del arbol, representa un componente específico de Terraform
 class TerraformLeaf(TerraformComponent):
 
     def __init__(self, name, element_type, file_path=None, resource_type=None):
-        super().__init__(name, element_type, file_path)
-        self.resource_type = resource_type
+        super().__init__(name, element_type, resource_type, file_path)
     
     def add(self, component):
         raise Exception("No se puede añadir una hoja a otra hoja")
@@ -319,19 +318,16 @@ class TerraformLeaf(TerraformComponent):
 # Principio OCP: Abierto para extensión, cerrado para modificación
 
 class DependencyExtractor:
-    """Interfaz común para extraer dependencias de diferentes tipos de bloques"""
-    
+       
     def extract_dependencies(self, element):
-        """Extrae las dependencias de un elemento"""
         raise NotImplementedError
     
     def get_element_metadata(self, element):
-        """Obtiene metadatos del elemento"""
         raise NotImplementedError
 
 
 class ResourceDependencyExtractor(DependencyExtractor):
-    """Extractor de dependencias para recursos"""
+    
     
     def extract_dependencies(self, element):
         dependencies = []
@@ -347,7 +343,7 @@ class ResourceDependencyExtractor(DependencyExtractor):
         return dependencies
     
     def _find_references(self, value):
-        """Encuentra referencias en el valor usando regex"""
+       
         import re
         references = []
         # Patrones para diferentes tipos de referencias
@@ -376,7 +372,7 @@ class ResourceDependencyExtractor(DependencyExtractor):
 
 
 class ModuleDependencyExtractor(DependencyExtractor):
-    """Extractor de dependencias para módulos"""
+   
     
     def extract_dependencies(self, element):
         dependencies = []
@@ -400,8 +396,7 @@ class ModuleDependencyExtractor(DependencyExtractor):
 
 
 class DataDependencyExtractor(DependencyExtractor):
-    """Extractor de dependencias para data sources"""
-    
+       
     def extract_dependencies(self, element):
         dependencies = []
         # Los data sources pueden depender de otros recursos
@@ -437,7 +432,7 @@ class DataDependencyExtractor(DependencyExtractor):
 
 
 class OutputDependencyExtractor(DependencyExtractor):
-    """Extractor de dependencias para outputs"""
+    
     
     def extract_dependencies(self, element):
         dependencies = []
@@ -474,7 +469,7 @@ class OutputDependencyExtractor(DependencyExtractor):
 
 
 class VariableDependencyExtractor(DependencyExtractor):
-    """Extractor de dependencias para variables"""
+    
     
     def extract_dependencies(self, element):
         # Las variables generalmente no tienen dependencias
@@ -490,7 +485,7 @@ class VariableDependencyExtractor(DependencyExtractor):
 
 
 class LocalsDependencyExtractor(DependencyExtractor):
-    """Extractor de dependencias para locals"""
+    
     
     def extract_dependencies(self, element):
         dependencies = []
@@ -526,7 +521,7 @@ class LocalsDependencyExtractor(DependencyExtractor):
 
 
 class TerraformDependencyAdapter:
-    """Adapter que unifica la interfaz de acceso a dependencias"""
+    
     
     def __init__(self):
         self.extractors = {
@@ -539,11 +534,11 @@ class TerraformDependencyAdapter:
         }
     
     def register_extractor(self, element_type, extractor):
-        """Registra un nuevo extractor para un tipo de elemento (OCP)"""
+        
         self.extractors[element_type] = extractor
     
     def get_edges(self, terraform_elements):
-        """Obtiene todas las aristas del grafo de dependencias"""
+        
         edges = []
         
         for element in terraform_elements:
@@ -559,7 +554,7 @@ class TerraformDependencyAdapter:
         return edges
     
     def get_metadata(self, terraform_elements):
-        """Obtiene metadatos unificados para todos los elementos"""
+       
         metadata = {}
         
         for element in terraform_elements:
@@ -579,7 +574,7 @@ class TerraformDependencyAdapter:
         return metadata
     
     def build_dependency_graph(self, terraform_elements):
-        """Construye un grafo de dependencias usando el adapter"""
+        
         graph = {}
         
         for element in terraform_elements:
@@ -595,7 +590,7 @@ class TerraformDependencyAdapter:
 
 
 def represent_hierarchy_with_adapter(terraform_elements):
-    """Representa la jerarquía usando el adapter y el patrón composite"""
+    
     adapter = TerraformDependencyAdapter()
     
     # Crear el nodo raíz
@@ -630,7 +625,7 @@ def represent_hierarchy_with_adapter(terraform_elements):
 
 # Ejemplo de uso con OCP - fácil añadir nuevos tipos
 class ProviderDependencyExtractor(DependencyExtractor):
-    """Nuevo extractor para providers (extensión sin modificación)"""
+   
     
     def extract_dependencies(self, element):
         return []  # Los providers generalmente no tienen dependencias
@@ -642,5 +637,159 @@ class ProviderDependencyExtractor(DependencyExtractor):
             'file_path': element.get('file_path'),
             'full_name': element.get('full_name')
         }
+
+
+# Función de demostración del Adapter y OCP
+def demonstrate_adapter_pattern(terraform_root_path):
+
+    
+    print(" Demostración del Patrón Adapter con OCP \n")
+    
+    #  Parsear archivos Terraform
+    print("Parseando archivos Terraform...")
+    terraform_elements = recursive_terraform_search(terraform_root_path)
+    print(f"   Encontrados {len(terraform_elements)} elementos\n")
+    
+    # Crear adapter
+    print("Creando Terraform Dependency Adapter...")
+    adapter = TerraformDependencyAdapter()
+    
+    #  Obtener edges usando el adapter
+    print("Obteniendo aristas con adapter unificado...")
+    edges = adapter.get_edges(terraform_elements)
+    print(f"   Encontradas {len(edges)} dependencias:")
+    for source, target in edges[:5]:  # Mostrar solo las primeras 5
+        print(f"   {source} -> {target}")
+    if len(edges) > 5:
+        print(f"   ... y {len(edges) - 5} más\n")
+    else:
+        print()
+    
+    # Obtener metadata usando el adapter
+    print("Obteniendo metadata con adapter unificado...")
+    metadata = adapter.get_metadata(terraform_elements)
+    print(f"   Metadata para {len(metadata)} elementos:")
+    for key, meta in list(metadata.items())[:3]:  # Mostrar solo los primeros 3
+        print(f"   {key}: {meta['type']} con {meta['degree']} dependencias")
+    if len(metadata) > 3:
+        print(f"   ... y {len(metadata) - 3} elementos más\n")
+    else:
+        print()
+    
+    #  Demostrar OCP - añadir nuevo tipo sin modificar código existente
+    print(" Demostrando OCP - Añadiendo nuevo extractor de Provider...")
+    
+    # Simulamos un elemento provider
+    provider_element = {
+        'type': 'provider',
+        'name': 'aws',
+        'full_name': 'provider.aws',
+        'file_path': '/terraform/providers.tf'
+    }
+    
+    # Registrar nuevo extractor (extensión sin modificación)
+    adapter.register_extractor('provider', ProviderDependencyExtractor())
+    
+    # Probar con el nuevo tipo
+    test_elements = terraform_elements + [provider_element]
+    new_metadata = adapter.get_metadata(test_elements)
+    
+    if 'provider.aws' in new_metadata:
+        print("    Nuevo tipo 'provider' añadido exitosamente!")
+        print(f"   Metadata del provider: {new_metadata['provider.aws']}")
+    else:
+        print("    Error al añadir nuevo tipo")
+    
+    print("\n6. Construyendo grafo de dependencias...")
+    dependency_graph = adapter.build_dependency_graph(terraform_elements)
+    print(f"   Grafo construido con {len(dependency_graph)} nodos")
+    
+    # 7. Crear jerarquía con Composite
+    print("\n7. Creando jerarquía con patrón Composite...")
+    root, _ = represent_hierarchy_with_adapter(terraform_elements)
+    print("   Jerarquía creada:")
+    root.show_details()
+    
+    return adapter, terraform_elements, dependency_graph
+
+
+# Función para analizar dependencias específicas
+def analyze_dependencies(adapter, terraform_elements, element_name):
+   
+    
+    print(f"\nAnálisis de dependencias para: {element_name}")
+    
+    # Buscar el elemento
+    target_element = None
+    for element in terraform_elements:
+        if element.get('full_name') == element_name or element.get('name') == element_name:
+            target_element = element
+            break
+    
+    if not target_element:
+        print(f" Elemento '{element_name}' no encontrado")
+        return
+    
+    # Obtener extractor específico
+    element_type = target_element.get('type')
+    if element_type not in adapter.extractors:
+        print(f" No hay extractor para tipo '{element_type}'")
+        return
+    
+    extractor = adapter.extractors[element_type]
+    
+    # Extraer dependencias
+    dependencies = extractor.extract_dependencies(target_element)
+    metadata = extractor.get_element_metadata(target_element)
+    
+    print(f"Tipo: {metadata['type']}")
+    print(f"Archivo: {metadata.get('file_path', 'N/A')}")
+    print(f"Dependencias ({len(dependencies)}):")
+    
+    if dependencies:
+        for dep in dependencies:
+            print(f"  -> {dep}")
+    else:
+        print("  No tiene dependencias")
+    
+    return dependencies, metadata
+
+
+# Función para exportar análisis
+def export_dependency_analysis(adapter, terraform_elements, output_dir="./analysis"):
+    
+    
+    import os
+    os.makedirs(output_dir, exist_ok=True)
+    
+    print(f"Exportando análisis a {output_dir}")
+    
+    # 1. Exportar edges
+    edges = adapter.get_edges(terraform_elements)
+    edges_file = os.path.join(output_dir, "dependencies_edges.json")
+    with open(edges_file, 'w') as f:
+        json.dump(edges, f, indent=2)
+    print(f" Aristas exportadas a {edges_file}")
+    
+    # 2. Exportar metadata
+    metadata = adapter.get_metadata(terraform_elements)
+    metadata_file = os.path.join(output_dir, "elements_metadata.json")
+    with open(metadata_file, 'w') as f:
+        json.dump(metadata, f, indent=2)
+    print(f" Metadata exportada a {metadata_file}")
+    
+    # 3. Exportar grafo
+    dependency_graph = adapter.build_dependency_graph(terraform_elements)
+    graph_file = os.path.join(output_dir, "dependency_graph.json")
+    with open(graph_file, 'w') as f:
+        json.dump(dependency_graph, f, indent=2)
+    print(f" Grafo exportado a {graph_file}")
+    
+    # 4. Exportar en formato DOT para visualización
+    dot_file = os.path.join(output_dir, "dependencies.dot")
+    export_graph_to_dot(dependency_graph, dot_file)
+    print(f" Grafo DOT exportado a {dot_file}")
+    
+    print(" Análisis completo exportado exitosamente!")
 
 

@@ -1,7 +1,11 @@
 import os
 import pytest
-from src.terraform_graph import TerraformComponent, TerraformComposite
-from src.terraform_graph import represent_hierarchy
+from src.terraform_graph import (
+    TerraformComponent, TerraformComposite, TerraformLeaf,
+    TerraformDependencyAdapter, ResourceDependencyExtractor,
+    ModuleDependencyExtractor, DataDependencyExtractor,
+    ProviderDependencyExtractor, represent_hierarchy_with_adapter
+)
 
 
 
